@@ -1,0 +1,57 @@
+package com.example.JWT.JWTFilters;
+
+import java.io.IOException;
+
+import jakarta.servlet.http.Cookie;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.example.JWT.DTO.UserDTO;
+import com.example.JWT.Utils.JWTUtils;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import tools.jackson.databind.ObjectMapper;
+
+public class JWTAuthFilter extends OncePerRequestFilter{
+    private final JWTUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
+
+    public JWTAuthFilter(JWTUtils jwtUtils, AuthenticationManager authenticationManager)
+    {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtils = jwtUtils; 
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+                if(!request.getServletPath() .equals("/api/generate"))
+                {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+                ObjectMapper objectMapper = new ObjectMapper();
+                UserDTO userDTO = objectMapper.readValue(request.getInputStream(), UserDTO.class);
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDTO.getName(), userDTO.getPassword());
+                Authentication authResult = authenticationManager.authenticate(authToken);
+                if(authResult.isAuthenticated())
+                {
+                    String token = jwtUtils.generateToken(authResult.getName(), 15);
+                    response.setHeader("Authentication", "Bearer "+token);
+                    String refreshToken = jwtUtils.generateToken(authResult.getName(), 7*24*60);
+                    Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+                    refreshCookie.setHttpOnly(true);
+                    refreshCookie.setSecure(false);
+                    refreshCookie.setPath("/api/refreshtoken");
+                    refreshCookie.setMaxAge(7*24*60*60);
+                    response.addCookie(refreshCookie);
+                }
+
+    }
+
+}
