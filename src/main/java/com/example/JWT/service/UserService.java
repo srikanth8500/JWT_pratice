@@ -44,7 +44,11 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user= userRepo.findByName(username).orElseThrow( () -> new UsernameNotFoundException("Username is not present" + username));
-        return user;
+        return org.springframework.security.core.userdetails.User.builder()
+        .username(user.getUsername())
+        .password(user.getPassword())
+        .authorities(user.getRoles())   // <-- MUST be authorities
+        .build();
     }
 
 }
