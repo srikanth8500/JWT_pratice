@@ -24,7 +24,12 @@ public class JWTValidationFilter extends OncePerRequestFilter{
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-                String header = request.getHeader("Authentication");
+                String path = request.getServletPath();
+                if (path.equals("/api/register")) {
+    filterChain.doFilter(request, response);
+    return;
+}
+                String header = request.getHeader("Authorization");
                 String token = extractToken(header);
                 if(token != null)
                 {
@@ -41,7 +46,7 @@ public class JWTValidationFilter extends OncePerRequestFilter{
 
     public String extractToken (String token)
     {
-        if(token !=null && token.startsWith("Bearer"))
+        if(token !=null && token.startsWith("Bearer "))
         {
             return token.substring(7);
         }

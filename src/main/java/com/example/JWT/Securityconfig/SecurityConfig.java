@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -25,13 +26,15 @@ public class SecurityConfig {
 
     private final JWTUtils jwtUtils;
     private final UserDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
 
-    public SecurityConfig(JWTUtils jwtUtils , UserDetailsService userDetailsService)
+    public SecurityConfig(JWTUtils jwtUtils , UserDetailsService userDetailsService, PasswordEncoder passwordEncoder)
     {
 
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
@@ -41,7 +44,10 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider()
     {
-        return new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        // provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
     }
 
     @Bean
@@ -61,7 +67,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(
             auth -> auth
-            .requestMatchers("/api/register").permitAll()
+            .requestMatchers("/api/register", "/generate", "/refreshtoken", "/auth/login" ).permitAll()
             .anyRequest().authenticated()
         )
         .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

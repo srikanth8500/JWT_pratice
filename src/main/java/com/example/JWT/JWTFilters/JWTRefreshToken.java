@@ -26,10 +26,17 @@ public class JWTRefreshToken  extends OncePerRequestFilter{
         this.jwtUtils= jwtUtils;
     }
 
+    
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-                if(!request.getServletPath().equals("/api/refreshtoken"))
+                String path = request.getServletPath();
+                if (path.equals("/api/register")) {
+    filterChain.doFilter(request, response);
+    return;
+}
+                if(!request.getServletPath().equals("/refreshtoken"))
                 {
                     filterChain.doFilter(request, response);
                     return;
@@ -42,7 +49,7 @@ public class JWTRefreshToken  extends OncePerRequestFilter{
             if(authResult.isAuthenticated())
             {
                 String newToken= jwtUtils.generateToken(authResult.getName(), 15);
-                response.setHeader("Authentication", "Bearer "+newToken);
+                response.setHeader("Authorization", "Bearer "+newToken);
             }
         }
         else

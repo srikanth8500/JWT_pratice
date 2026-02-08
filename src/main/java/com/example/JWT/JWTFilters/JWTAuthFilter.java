@@ -30,11 +30,17 @@ public class JWTAuthFilter extends OncePerRequestFilter{
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-                if(!request.getServletPath() .equals("/api/generate"))
+                String path = request.getServletPath();
+                if (path.equals("/api/register")) {
+    filterChain.doFilter(request, response);
+    return;
+}
+                if(!request.getServletPath() .equals("/generate"))
                 {
                     filterChain.doFilter(request, response);
                     return;
                 }
+                
                 ObjectMapper objectMapper = new ObjectMapper();
                 UserDTO userDTO = objectMapper.readValue(request.getInputStream(), UserDTO.class);
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDTO.getName(), userDTO.getPassword());
@@ -42,7 +48,7 @@ public class JWTAuthFilter extends OncePerRequestFilter{
                 if(authResult.isAuthenticated())
                 {
                     String token = jwtUtils.generateToken(authResult.getName(), 15);
-                    response.setHeader("Authentication", "Bearer "+token);
+                    response.setHeader("Authorization", "Bearer "+token);
                     String refreshToken = jwtUtils.generateToken(authResult.getName(), 7*24*60);
                     Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
                     refreshCookie.setHttpOnly(true);
@@ -51,6 +57,7 @@ public class JWTAuthFilter extends OncePerRequestFilter{
                     refreshCookie.setMaxAge(7*24*60*60);
                     response.addCookie(refreshCookie);
                 }
+                filterChain.doFilter(request, response);
 
     }
 

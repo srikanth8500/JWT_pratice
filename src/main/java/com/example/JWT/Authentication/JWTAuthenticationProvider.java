@@ -34,7 +34,7 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("JWT token is worng");
         }
         UserDetails user = userDetailsService.loadUserByUsername(name);
-        return new UsernamePasswordAuthenticationToken(user.getUsername(), null, user.getAuthorities() );
+        return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities() );
     }
 
     @Override
