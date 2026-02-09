@@ -29,6 +29,8 @@ public class AuthController {
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody UserDTO dto) {
 
+        System.out.println("Attempting login for user: " + dto.getName());
+
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(dto.getName(), dto.getPassword())
         );

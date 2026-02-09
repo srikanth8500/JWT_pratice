@@ -9,6 +9,9 @@ import com.example.JWT.service.UserService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 
 
@@ -30,9 +33,16 @@ public String registeruser(@RequestBody UserDTO userDTO) {
 }
 
 @GetMapping("/user")
-public UserDTO getMethodName(@RequestParam String name) {
-    return userService.findUser(name);
+public UserDTO getMethodName(@RequestParam String username) {
+    System.out.println("Received request for user: " + username);
+    return userService.findUser(username);
 }
+
+@GetMapping("/all")
+public List<UserDTO> getAllUsers() {
+    return userService.findAllUsers();
+}
+
 
 
 }
