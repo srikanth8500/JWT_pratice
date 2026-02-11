@@ -64,7 +64,7 @@ public class SecurityConfig {
         JWTAuthFilter jwtAuthFilter = new JWTAuthFilter(jwtUtils, authenticationManager);
         JWTValidationFilter jwtValidationFilter = new JWTValidationFilter(authenticationManager);
         JWTRefreshToken jwtRefreshToken = new JWTRefreshToken(jwtUtils, authenticationManager);
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**"))
         .authorizeHttpRequests(
             auth -> auth
             .requestMatchers("/api/register", "/generate", "/refreshtoken", "/auth/login" ).permitAll()

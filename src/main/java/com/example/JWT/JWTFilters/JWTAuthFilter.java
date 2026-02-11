@@ -15,8 +15,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 
+@Slf4j
 public class JWTAuthFilter extends OncePerRequestFilter{
     private final JWTUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
@@ -31,18 +33,17 @@ public class JWTAuthFilter extends OncePerRequestFilter{
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
                 String path = request.getServletPath();
-                if (path.equals("/api/register")) {
+                if (path.equals("/api/register") || path.equals("/auth/login")) {
     filterChain.doFilter(request, response);
     return;
-}
-                if(!request.getServletPath() .equals("/generate"))
-                {
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-                
+}           
+if (!path.equals("/generate")) {
+    filterChain.doFilter(request, response);
+    return;
+}    
                 ObjectMapper objectMapper = new ObjectMapper();
                 UserDTO userDTO = objectMapper.readValue(request.getInputStream(), UserDTO.class);
+                log.info("Attempting login for user: " + userDTO.getName());
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDTO.getName(), userDTO.getPassword());
                 Authentication authResult = authenticationManager.authenticate(authToken);
                 if(authResult.isAuthenticated())

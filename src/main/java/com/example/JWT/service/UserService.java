@@ -30,10 +30,10 @@ public class UserService implements UserDetailsService {
         try {
             
         
-        System.out.println("entrying service " + name);
+        // System.out.println("entrying service " + name);
         UserDTO uDto= new UserDTO();
         User usr = userRepo.findByUsername(name).orElseThrow(() -> new UsernameNotFoundException("User not found with name: " + name));
-        System.out.println("User network call");
+        // System.out.println("User network call");
         uDto.setName(usr.getUsername());
         uDto.setPassword(null);
         String roles = usr.getAuthorities().stream().map(a -> a.getAuthority()).reduce((a,b) -> a + "," + b).orElse("");
